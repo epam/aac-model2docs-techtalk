@@ -1,0 +1,7 @@
+*.~vsdx
+# Ignore C4 language server log files
+c4-language-server.log
+
+# Ignore exported diagrams (can be regenerated)
+exports/
+exports-*/

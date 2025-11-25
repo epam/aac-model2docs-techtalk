@@ -1,0 +1,8 @@
+{
+   
+    // Alternative: Change VS Code theme temporarily when viewing diagrams
+    "window.autoDetectColorScheme": false,
+    
+    // Show exports folder even though it's in .gitignore
+    "explorer.excludeGitIgnore": false
+}
