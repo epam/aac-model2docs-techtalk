@@ -111,7 +111,11 @@ jobs:
           git add docs/images/
           if git diff --staged --quiet; then
             echo "No changes to commit"
+            exit 0
           else
             git commit -m "Update exported SVG diagrams [skip ci]"
-            git push
+            git push || {
+              echo "Push failed, but diagrams were exported successfully"
+              exit 0
+            }
           fi
