@@ -2,8 +2,6 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
     !impliedRelationships true
     
-    !docs ../../docs/skyassist
-
     model {
         properties {
             structurizr.groups true
@@ -25,7 +23,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
                 keyVaultContainer = container "Key Vault" "Security layer for the agents" "Azure, Key Vault" "Iteration1"
                 
-                groundingWithBingContainer = container "Grounding with Bing" "Web search LLM grounding service shared across environments" "Azure, Bing Search" "Iteration1"
+                webSearchContainer = container "Web Search" "Web search LLM grounding service shared across environments" "Azure, Bing Search" "Iteration1"
                 
                 aiAgentServiceContainer = container "Azure Bot" "Agent channels adapter" "Azure Bot" "Iteration1"
                 
@@ -62,7 +60,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                     }
                     orderAgentContainer = container "Order Agent" "Order tracking and management via Copilot Studio" "Azure, Container Apps, Copilot Studio, Agent Framework" "Iteration1"
 
-                    skyAssistOrchestratorContainer = container "Orchestrator" "Routes requests to specialized agents" "Azure, Container Apps, Semantic Kernel, Python" "Iteration1"
+                    skyAssistAgentContainer = container "Sky Assist Agent" "Routes requests to specialized agents" "Azure, Container Apps, Semantic Kernel, Python" "Iteration1"
                 }
                 cosmosDbContainer = container "Cosmos DB" "Cosmos DB for SkyAssist" "Azure Cosmos DB" "Iteration1"
             }
@@ -95,21 +93,22 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
         
         // === Chat Service to Orchestration ===
-        chatServiceContainer -> skyAssistOrchestratorContainer "Routes requests to orchestrator" "HTTPS"
+        chatServiceContainer -> skyAssistAgentContainer "Routes requests to orchestrator" "HTTPS"
 
         // === Agent Orchestration ===
-        skyAssistOrchestratorContainer -> orderAgentContainer "Calls Order Agent" "HTTPS"
-        skyAssistOrchestratorContainer -> productRecommendationContainer "Calls Travel Gear Finder" "HTTPS"
-        skyAssistOrchestratorContainer -> keyVaultContainer "Retrieves secrets" "HTTPS/Private Endpoint" "Microsoft Azure - Private Endpoints"
+        skyAssistAgentContainer -> orderAgentContainer "Calls Order Agent" "HTTPS"
+        skyAssistAgentContainer -> productRecommendationContainer "Calls Travel Gear Finder" "HTTPS"
+        skyAssistAgentContainer -> keyVaultContainer "Retrieves secrets" "HTTPS/Private Endpoint" "Microsoft Azure - Private Endpoints"
 
 
         // === AI Services Integration ===
         productRecommendationContainer -> agentHelpersContainer "Uses AI Foundry Agent Service" "HTTPS"
-        skyAssistOrchestratorContainer -> agentHelpersContainer "Uses AI services" "HTTPS"
+        skyAssistAgentContainer -> agentHelpersContainer "Uses AI services" "HTTPS"
 
         // === AI Foundry Internal Flow ===
         agentHelpersContainer -> sharedAIFoundryContainer "Uses shared services"
-        aiFoundrySearchAgentComponent -> groundingWithBingContainer "Uses grounding"
+        aiFoundrySearchAgentComponent -> webSearchContainer "Uses grounding"
+        orderAgentContainer -> webSearchContainer "Uses grounding" "HTTPS"
         
         // === Travel Gear Finder Agent References to AI Foundry Agents ===
         searchRequestBuilderAgentRefComponent -> aiFoundrySearchRequestBuilderAgentComponent "Uses AI Foundry agent"
@@ -134,22 +133,22 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
         chatServiceContainer -> cosmosDbContainer "Stores conversation history" "HTTPS"
         productConversationMemoryComponent -> cosmosDbContainer "Stores conversation history" "HTTPS"
         orderAgentContainer -> cosmosDbContainer "Stores conversation history" "HTTPS"
-        skyAssistOrchestratorContainer -> cosmosDbContainer "Stores conversation history" "HTTPS"
+        skyAssistAgentContainer -> cosmosDbContainer "Stores conversation history" "HTTPS"
 
         // === External Systems Integration ===
         orderAgentContainer -> orderServiceSoftware "Retrieves order data" "HTTPS"
         productRecommendationContainer -> catalogServiceSoftware "Retrieves product data" "HTTPS"
-        skyAssistOrchestratorContainer -> sunshineZendeskSoftware "Escalates tickets" "HTTPS"
+        skyAssistAgentContainer -> sunshineZendeskSoftware "Escalates tickets" "HTTPS"
         sunshineZendeskSoftware -> zendeskSoftware "Integrates with" "HTTPS"
 
         // === Monitoring & Telemetry ===
         chatServiceContainer -> monitoringContainer "Sends telemetry" "HTTPS"
-        skyAssistOrchestratorContainer -> monitoringContainer "Sends telemetry" "HTTPS"
+        skyAssistAgentContainer -> monitoringContainer "Sends telemetry" "HTTPS"
         tracingComponent -> monitoringContainer "Sends telemetry" "HTTPS"
 
 
         // === Escalation Flow (Tagged for Dynamic Views) ===
-        skyAssistOrchestratorContainer -> sunshineZendeskSoftware "Creates ticket/session" "HTTPS" {
+        skyAssistAgentContainer -> sunshineZendeskSoftware "Creates ticket/session" "HTTPS" {
             tags "EscalationFlow"
         }
         zendeskSoftware -> reverseProxyContainer "Sends webhook reply" "HTTPS" {
@@ -182,7 +181,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                     containerInstance reverseProxyContainer devDeployment "Microsoft Azure - Front Door and CDN Profiles"
                     containerInstance keyVaultContainer devDeployment "Microsoft Azure - Key Vaults"
                     containerInstance staticContentContainer devDeployment "Microsoft Azure - Storage Accounts"
-                    containerInstance groundingWithBingContainer devDeployment "Microsoft Azure - Bing Search"
+                    containerInstance webSearchContainer devDeployment "Microsoft Azure - Bing Search"
                     deploymentNode "cosmos-skyassist-dev" "Development Cosmos DB Account" "Azure Cosmos DB Account" "Microsoft Azure - Azure Cosmos DB" {
                         containerInstance cosmosDbContainer devDeployment "Microsoft Azure - Azure Cosmos DB"
                     }
@@ -205,7 +204,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                         }
                     }
                     deploymentNode "cae-skyassist-dev" "Container Apps Environment" "Azure Container Apps Environment" "Microsoft Azure - Container Apps Environments" {
-                        containerInstance skyAssistOrchestratorContainer devDeployment "Microsoft Azure - Container Apps"
+                        containerInstance skyAssistAgentContainer devDeployment "Microsoft Azure - Container Apps"
                         containerInstance orderAgentContainer devDeployment "Microsoft Azure - Container Apps"
                         containerInstance chatServiceContainer devDeployment "Microsoft Azure - Container Apps"
                         containerInstance productRecommendationContainer devDeployment "Microsoft Azure - Container Apps"
@@ -234,7 +233,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                     containerInstance reverseProxyContainer testDeployment "Microsoft Azure - Front Door and CDN Profiles"
                     containerInstance keyVaultContainer testDeployment "Microsoft Azure - Key Vaults"
                     containerInstance staticContentContainer testDeployment "Microsoft Azure - Storage Accounts"
-                    containerInstance groundingWithBingContainer testDeployment "Microsoft Azure - Bing Search"
+                    containerInstance webSearchContainer testDeployment "Microsoft Azure - Bing Search"
                     deploymentNode "cosmos-skyassist-test" "Test Cosmos DB Account" "Azure Cosmos DB Account" "Microsoft Azure - Azure Cosmos DB" {
                         containerInstance cosmosDbContainer testDeployment "Microsoft Azure - Azure Cosmos DB"
                     }
@@ -257,7 +256,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                         }
                     }
                     deploymentNode "cae-skyassist-test" "Container Apps Environment" "Azure Container Apps Environment" "Microsoft Azure - Container Apps Environments" {
-                        containerInstance skyAssistOrchestratorContainer testDeployment "Microsoft Azure - Container Apps"
+                        containerInstance skyAssistAgentContainer testDeployment "Microsoft Azure - Container Apps"
                         containerInstance orderAgentContainer testDeployment "Microsoft Azure - Container Apps"
                         containerInstance chatServiceContainer testDeployment "Microsoft Azure - Container Apps"
                         containerInstance productRecommendationContainer testDeployment "Microsoft Azure - Container Apps"
@@ -286,7 +285,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                     containerInstance reverseProxyContainer prodDeployment "Microsoft Azure - Front Door and CDN Profiles"
                     containerInstance keyVaultContainer prodDeployment "Microsoft Azure - Key Vaults"
                     containerInstance staticContentContainer prodDeployment "Microsoft Azure - Storage Accounts"
-                    containerInstance groundingWithBingContainer prodDeployment "Microsoft Azure - Bing Search"
+                    containerInstance webSearchContainer prodDeployment "Microsoft Azure - Bing Search"
                     deploymentNode "cosmos-skyassist-prod" "Production Cosmos DB Account" "Azure Cosmos DB Account" "Microsoft Azure - Azure Cosmos DB" {
                         containerInstance cosmosDbContainer prodDeployment "Microsoft Azure - Azure Cosmos DB"
                     }
@@ -309,7 +308,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                         }
                     }
                     deploymentNode "cae-skyassist-prod" "Container Apps Environment" "Azure Container Apps Environment" "Microsoft Azure - Container Apps Environments" {
-                        containerInstance skyAssistOrchestratorContainer prodDeployment "Microsoft Azure - Container Apps"
+                        containerInstance skyAssistAgentContainer prodDeployment "Microsoft Azure - Container Apps"
                         containerInstance orderAgentContainer prodDeployment "Microsoft Azure - Container Apps"
                         containerInstance chatServiceContainer prodDeployment "Microsoft Azure - Container Apps"
                         containerInstance productRecommendationContainer prodDeployment "Microsoft Azure - Container Apps"
@@ -361,7 +360,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
             description "The component diagram for the Chat Service."
         }
 
-        component skyAssistOrchestratorContainer "Orchestrator" "Orchestrator Agent" {
+        component skyAssistAgentContainer "Orchestrator" "Orchestrator Agent" {
             include *
             exclude existingSkyCartGroup 
             exclude "relationship.tag==EscalationFlow"
@@ -390,12 +389,12 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
             skyAssistWidgetContainer -> reverseProxyContainer "Sends messages to reverse proxy"
             reverseProxyContainer -> aiAgentServiceContainer "Routes to AI Agent Service"
             aiAgentServiceContainer -> chatServiceContainer "Forwards to chat service"
-            chatServiceContainer -> skyAssistOrchestratorContainer "Passes the request to the orchestration agent"
-            skyAssistOrchestratorContainer -> orderAgentContainer "Hands off order-related requests"
-            orderAgentContainer -> skyAssistOrchestratorContainer "Returns the response of the order agent"
-            skyAssistOrchestratorContainer -> productRecommendationContainer "Hands off product recommendation requests"
-            productRecommendationContainer -> skyAssistOrchestratorContainer "Returns the response of the product recommendation agent"
-            skyAssistOrchestratorContainer -> chatServiceContainer "Returns the response via the chain of execution"
+            chatServiceContainer -> skyAssistAgentContainer "Passes the request to the orchestration agent"
+            skyAssistAgentContainer -> orderAgentContainer "Hands off order-related requests"
+            orderAgentContainer -> skyAssistAgentContainer "Returns the response of the order agent"
+            skyAssistAgentContainer -> productRecommendationContainer "Hands off product recommendation requests"
+            productRecommendationContainer -> skyAssistAgentContainer "Returns the response of the product recommendation agent"
+            skyAssistAgentContainer -> chatServiceContainer "Returns the response via the chain of execution"
             chatServiceContainer -> aiAgentServiceContainer "Returns response to Azure Bot"
             aiAgentServiceContainer -> reverseProxyContainer "Returns response to reverse proxy"
             reverseProxyContainer -> skyAssistWidgetContainer "Returns the channel specific response to the SkyAssist Widget"
@@ -408,8 +407,8 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
             skyAssistWidgetContainer -> reverseProxyContainer "Sends messages to reverse proxy"
             reverseProxyContainer -> aiAgentServiceContainer "Routes to AI Agent Service"
             aiAgentServiceContainer -> chatServiceContainer "Forwards to chat service"
-            chatServiceContainer -> skyAssistOrchestratorContainer "Passes the request to the orchestration agent"
-            skyAssistOrchestratorContainer -> sunshineZendeskSoftware "Escalates directly to Sunshine Zendesk"
+            chatServiceContainer -> skyAssistAgentContainer "Passes the request to the orchestration agent"
+            skyAssistAgentContainer -> sunshineZendeskSoftware "Escalates directly to Sunshine Zendesk"
             sunshineZendeskSoftware -> zendeskSoftware "Connects to Zendesk"
             zendeskSoftware -> csRepPerson "Message dispatched to the customer service representative"
             csRepPerson -> zendeskSoftware "Customer service representative replies to the customer"
@@ -426,11 +425,11 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
         dynamic skyAssistSoftware "DataPersistenceFlow" "Conversation Data Persistence Flow" {
             chatServiceContainer -> cosmosDbContainer "Stores chat service conversation"
-            skyAssistOrchestratorContainer -> cosmosDbContainer "Stores orchestrator conversation"
+            skyAssistAgentContainer -> cosmosDbContainer "Stores orchestrator conversation"
             orderAgentContainer -> cosmosDbContainer "Stores order agent conversation"
             productRecommendationContainer -> cosmosDbContainer "Stores product recommendation conversation"
             cosmosDbContainer -> chatServiceContainer "Retrieves conversation history"
-            cosmosDbContainer -> skyAssistOrchestratorContainer "Retrieves conversation history"
+            cosmosDbContainer -> skyAssistAgentContainer "Retrieves conversation history"
             cosmosDbContainer -> orderAgentContainer "Retrieves conversation history"
             cosmosDbContainer -> productRecommendationContainer "Retrieves conversation history"
             
@@ -481,13 +480,13 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
         }
 
         container skyAssistSoftware "DataPersistenceView" "Data Persistence Architecture" {
-            include cosmosDbContainer staticContentContainer chatServiceContainer skyAssistOrchestratorContainer orderAgentContainer productRecommendationContainer
+            include cosmosDbContainer staticContentContainer chatServiceContainer skyAssistAgentContainer orderAgentContainer productRecommendationContainer
             autoLayout tb
             description "Data persistence architecture showing Cosmos DB, Storage, and services that persist data"
         }
 
         container skyAssistSoftware "MonitoringView" "Monitoring & Observability" {
-            include monitoringContainer chatServiceContainer skyAssistOrchestratorContainer sharedAIFoundryContainer agentHelpersContainer
+            include monitoringContainer chatServiceContainer skyAssistAgentContainer sharedAIFoundryContainer agentHelpersContainer
             autoLayout tb
             description "Monitoring and observability architecture showing telemetry flow"
         }
