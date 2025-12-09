@@ -1,0 +1,55 @@
+title: SkyCart Architecture
+description: SkyCart E-commerce Marketplace - Centralized repository for software architecture models and diagrams
+remote_theme: just-the-docs/just-the-docs
+show_downloads: false
+
+# Markdown settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Collections
+collections:
+  skyassist:
+    output: true
+    permalink: /skyassist/:name/
+  tdl:
+    output: true
+    permalink: /tdl/:name/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+  - scope:
+      path: ""
+      type: "skyassist"
+    values:
+      layout: "default"
+  - scope:
+      path: ""
+      type: "tdl"
+    values:
+      layout: "default"
+
+# Exclude from build
+exclude:
+  - README.md
+
+# Just the Docs configuration
+# Logo
+logo: "/assets/images/logo.svg"
+
+aux_links:
+  "View on GitHub":
+    - "https://github.com/epam/aac-model2docs-techtalk"
+
+# Enable search
+search_enabled: true
+
+# Navigation structure
+nav_sort: case_insensitive

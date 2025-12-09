@@ -1,0 +1,20 @@
+{
+  "name": "Dev Container for Architectural Diagrams",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "systemticks.c4-dsl-extension",
+        "jebbs.plantuml"
+      ]
+    }
+  },
+  "postCreateCommand": "echo 'Verifying tools...' && java -version && plantuml -version && structurizr-cli help && echo 'Dev container setup complete - All tools are ready!'",
+  "remoteUser": "vscode"
+}

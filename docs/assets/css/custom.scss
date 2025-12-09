@@ -1,0 +1,251 @@
+---
+---
+
+/* SkyCart Brand Colors - Green Theme */
+:root {
+  --sc-black: #1a1a1a;
+  --sc-white: #ffffff;
+  --sc-green: #2d8659;
+  --sc-green-light: #3fa876;
+  --sc-green-dark: #1f5d3e;
+  --sc-green-accent: #4caf50;
+  --sc-grey-lightest: #f5f9f7;
+  --sc-grey-light: #e0ebe5;
+  --sc-grey-medium: #90a89b;
+  --sc-grey-dark: #546e5f;
+}
+
+/* Apply SkyCart colors */
+a {
+  color: var(--sc-green) !important;
+}
+
+a:hover {
+  color: var(--sc-green-dark) !important;
+}
+
+.site-title {
+  color: var(--sc-green-dark) !important;
+  font-weight: 700;
+}
+
+.site-button,
+.btn-primary {
+  background-color: var(--sc-green) !important;
+  color: var(--sc-white) !important;
+}
+
+.site-button:hover,
+.btn-primary:hover {
+  background-color: var(--sc-green-dark) !important;
+}
+
+.site-nav,
+.side-bar {
+  background-color: var(--sc-grey-lightest) !important;
+}
+
+.site-header {
+  border-bottom: 2px solid var(--sc-green-light) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--sc-black) !important;
+}
+
+h1 {
+  border-bottom: 2px solid var(--sc-grey-light);
+  padding-bottom: 0.3em;
+}
+
+h2 {
+  color: var(--sc-green-dark) !important;
+}
+
+body, .main-content, .page-content {
+  text-align: justify !important;
+}
+
+.search-input {
+  border-color: var(--sc-grey-light) !important;
+}
+
+.search-input:focus {
+  border-color: var(--sc-green) !important;
+  outline-color: var(--sc-green-light) !important;
+}
+
+.nav-list-link {
+  color: var(--sc-grey-dark) !important;
+}
+
+.nav-list-link:hover,
+.nav-list-link.active {
+  color: var(--sc-green) !important;
+  background-color: var(--sc-grey-light) !important;
+}
+
+/* Image viewer styles */
+img {
+  cursor: zoom-in;
+  transition: opacity 0.2s ease-in-out;
+}
+
+img:hover {
+  opacity: 0.95;
+}
+
+.image-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease, background 0.3s ease;
+  pointer-events: none;
+}
+
+.image-viewer-overlay.active {
+  background: rgba(0, 0, 0, 0.95);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.image-viewer-container {
+  max-width: 95%;
+  max-height: 95%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-viewer-img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+  user-select: none;
+}
+
+.image-viewer-controls {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  background: var(--sc-white);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+}
+
+.iv-btn {
+  background: var(--sc-white);
+  color: var(--sc-grey-dark);
+  border: 1px solid var(--sc-grey-light);
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.iv-btn:hover {
+  background: var(--sc-grey-lightest);
+  border-color: var(--sc-green);
+  color: var(--sc-green);
+}
+
+.iv-btn:active {
+  transform: scale(0.95);
+}
+
+.iv-btn-close {
+  background: var(--sc-green);
+  color: var(--sc-white);
+  border-color: var(--sc-green);
+  margin-left: 4px;
+}
+
+.iv-btn-close:hover {
+  background: var(--sc-green-dark);
+  border-color: var(--sc-green-dark);
+  color: var(--sc-white);
+}
+
+/* Risk level indicators for TDL tables */
+.risk-low, .risk-easy {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+  padding: 2px 8px;
+  border-radius: 3px;
+  display: inline-block;
+  font-weight: 500;
+}
+
+.risk-medium {
+  background-color: #fff9c4;
+  color: #f57f17;
+  padding: 2px 8px;
+  border-radius: 3px;
+  display: inline-block;
+  font-weight: 500;
+}
+
+.risk-high, .risk-hard {
+  background-color: #ffccbc;
+  color: #bf360c;
+  padding: 2px 8px;
+  border-radius: 3px;
+  display: inline-block;
+  font-weight: 500;
+}
+
+/* Code blocks */
+code {
+  background-color: var(--sc-grey-lightest);
+  border: 1px solid var(--sc-grey-light);
+  border-radius: 3px;
+}
+
+pre {
+  background-color: var(--sc-grey-lightest);
+  border-left: 3px solid var(--sc-green);
+}
+
+/* Tables */
+table {
+  border-color: var(--sc-grey-light) !important;
+}
+
+thead {
+  background-color: var(--sc-green-dark) !important;
+  color: var(--sc-white) !important;
+}
+
+thead th {
+  color: var(--sc-white) !important;
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--sc-grey-lightest);
+}
+
+tbody tr:hover {
+  background-color: var(--sc-grey-light) !important;
+}
+

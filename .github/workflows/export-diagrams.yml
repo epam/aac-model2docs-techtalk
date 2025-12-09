@@ -1,0 +1,117 @@
+name: Export Architectural Diagrams
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'models/**/*.dsl'
+      - 'export-diagrams.sh'
+  workflow_dispatch:
+
+jobs:
+  export-diagrams:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz unzip curl
+
+      - name: Install PlantUML
+        run: |
+          PLANTUML_VERSION=1.2024.6
+          sudo mkdir -p /usr/local/plantuml /usr/local/bin
+          curl -fsSL "https://github.com/plantuml/plantuml/releases/download/v${PLANTUML_VERSION}/plantuml-${PLANTUML_VERSION}.jar" \
+            -o /tmp/plantuml.jar
+          sudo mv /tmp/plantuml.jar /usr/local/plantuml/plantuml.jar
+          echo '#!/bin/bash' | sudo tee /usr/local/bin/plantuml
+          echo 'exec java -Xmx1024m -jar /usr/local/plantuml/plantuml.jar "$@"' | sudo tee -a /usr/local/bin/plantuml
+          sudo chmod +x /usr/local/bin/plantuml
+
+      - name: Install Structurizr CLI
+        run: |
+          STRUCTURIZR_CLI_VERSION=2025.05.28
+          sudo mkdir -p /usr/local/structurizr /usr/local/bin
+          curl -fsSL "https://github.com/structurizr/cli/releases/download/v${STRUCTURIZR_CLI_VERSION}/structurizr-cli.zip" \
+            -o /tmp/structurizr-cli.zip
+          unzip /tmp/structurizr-cli.zip -d /tmp/structurizr-cli
+          sudo cp -r /tmp/structurizr-cli/lib /usr/local/structurizr/
+          echo '#!/bin/bash' | sudo tee /usr/local/bin/structurizr-cli
+          echo 'exec java -Xmx1024m -cp "/usr/local/structurizr:/usr/local/structurizr/lib/*" com.structurizr.cli.StructurizrCliApplication "$@"' | sudo tee -a /usr/local/bin/structurizr-cli
+          sudo chmod +x /usr/local/bin/structurizr-cli
+          rm -rf /tmp/structurizr-cli /tmp/structurizr-cli.zip
+
+      - name: Verify tools installation
+        run: |
+          java -version
+          plantuml -version
+          structurizr-cli help
+
+      - name: Export diagrams
+        run: |
+          chmod +x export-diagrams.sh
+          ./export-diagrams.sh
+
+      - name: Copy SVG diagrams to docs folder with structure
+        run: |
+          # Remove old SVG files from docs/images
+          rm -rf docs/images/*
+          mkdir -p docs/images
+          
+          # Map model names to folder names
+          declare -A model_folders=(
+            ["skyassist-model"]="skyassist"
+            ["aiworkspaceagent-model"]="workspace-agent"
+            ["mission-app-model"]="mission-app"
+            ["mission-lifecycle-flow"]="mission-app"
+          )
+          
+          # Copy SVGs with folder structure and rename
+          for model_dir in exports/*/; do
+            model_name=$(basename "$model_dir")
+            folder_name="${model_folders[$model_name]}"
+            
+            if [ -z "$folder_name" ]; then
+              echo "Warning: No folder mapping for $model_name"
+              continue
+            fi
+            
+            mkdir -p "docs/images/$folder_name"
+            
+            # Copy and rename SVG files (remove structurizr- prefix)
+            find "$model_dir/svg" -name "*.svg" 2>/dev/null | while read svg_file; do
+              filename=$(basename "$svg_file")
+              # Remove structurizr- prefix
+              new_filename="${filename#structurizr-}"
+              cp "$svg_file" "docs/images/$folder_name/$new_filename"
+              echo "Copied: $filename -> $folder_name/$new_filename"
+            done
+          done
+
+      - name: Commit SVG diagrams to repository
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/images/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update exported SVG diagrams [skip ci]"
+            git push
+          fi
