@@ -70,6 +70,7 @@ jobs:
 
       - name: Copy SVG diagrams to docs folder with structure
         run: |
+          set -e
           # Remove old SVG files from docs/images
           rm -rf docs/images/*
           mkdir -p docs/images
@@ -95,14 +96,17 @@ jobs:
             mkdir -p "docs/images/$folder_name"
             
             # Copy and rename SVG files (remove structurizr- prefix)
-            find "$model_dir/svg" -name "*.svg" 2>/dev/null | while read svg_file; do
-              filename=$(basename "$svg_file")
-              # Remove structurizr- prefix
-              new_filename="${filename#structurizr-}"
-              cp "$svg_file" "docs/images/$folder_name/$new_filename"
-              echo "Copied: $filename -> $folder_name/$new_filename"
+            for svg_file in "$model_dir/svg"/*.svg; do
+              if [ -f "$svg_file" ]; then
+                filename=$(basename "$svg_file")
+                # Remove structurizr- prefix
+                new_filename="${filename#structurizr-}"
+                cp "$svg_file" "docs/images/$folder_name/$new_filename"
+                echo "Copied: $filename -> $folder_name/$new_filename"
+              fi
             done
           done
+          exit 0
 
       - name: Commit SVG diagrams to repository
         run: |
