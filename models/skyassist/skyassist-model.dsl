@@ -43,7 +43,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                 
                 chatServiceContainer = container "Chat Service" "Entry point managing routing and conversation" "Azure, Container Apps, Python" "Iteration1"
 
-                digitalAgentWidgetContainer = container "Digital Agent Widget" "Digital Agent Widget and its canvas" "Azure Bot, React.js" "Web Browser,Future"
+                skyAssistWidgetContainer = container "SkyAssist Widget" "SkyAssist Widget and its canvas" "Azure Bot, React.js" "Web Browser,Future"
                 monitoringContainer = container "Monitoring" "Application Insights and Log Analytics" "Azure" "Iteration1"
 
                 reverseProxyContainer = container "Reverse Proxy" "Azure Front Door with WAF protection" "Azure, Frontdoor" "Iteration1"
@@ -62,9 +62,9 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                     }
                     orderAgentContainer = container "Order Agent" "Order tracking and management via Copilot Studio" "Azure, Container Apps, Copilot Studio, Agent Framework" "Iteration1"
 
-                    digitalAgentOrchestratorContainer = container "Orchestrator" "Routes requests to specialized agents" "Azure, Container Apps, Semantic Kernel, Python" "Iteration1"
+                    skyAssistOrchestratorContainer = container "Orchestrator" "Routes requests to specialized agents" "Azure, Container Apps, Semantic Kernel, Python" "Iteration1"
                 }
-                cosmosDbContainer = container "Cosmos DB" "Cosmos DB for the Digital Agent" "Azure Cosmos DB" "Iteration1"
+                cosmosDbContainer = container "Cosmos DB" "Cosmos DB for SkyAssist" "Azure Cosmos DB" "Iteration1"
             }
         }
 
@@ -73,7 +73,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
         // === External User Interactions ===
         customerPerson -> skyAssistSoftware "Inquiries" "HTTPS"
         customerPerson -> websiteSoftware "Visits skycart.com" "HTTPS"
-        customerPerson -> digitalAgentWidgetContainer "Sends inquiries" "HTTPS"
+        customerPerson -> skyAssistWidgetContainer "Sends inquiries" "HTTPS"
         customerPerson -> applicationsSoftware "Interacts with" "HTTPS"
         csRepPerson -> zendeskSoftware "Manages customer support" "HTTPS"
         skyCartStaffPerson -> microsoftTeamsSoftware "Interacts with AI agent" "Microsoft Teams"
@@ -81,7 +81,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
         
         // === Channel Entry Points ===
-        digitalAgentWidgetContainer -> reverseProxyContainer "Sends messages" "HTTPS"
+        skyAssistWidgetContainer -> reverseProxyContainer "Sends messages" "HTTPS"
         applicationsSoftware -> reverseProxyContainer "Sends messages" "HTTPS"
         teamsAppContainer -> reverseProxyContainer "Sends messages" "HTTPS"
         websiteSoftware -> staticContentContainer "Delivers widget" "HTTPS"
@@ -95,17 +95,17 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
         
         // === Chat Service to Orchestration ===
-        chatServiceContainer -> digitalAgentOrchestratorContainer "Routes requests to orchestrator" "HTTPS"
+        chatServiceContainer -> skyAssistOrchestratorContainer "Routes requests to orchestrator" "HTTPS"
 
         // === Agent Orchestration ===
-        digitalAgentOrchestratorContainer -> orderAgentContainer "Calls Order Agent" "HTTPS"
-        digitalAgentOrchestratorContainer -> productRecommendationContainer "Calls Travel Gear Finder" "HTTPS"
-        digitalAgentOrchestratorContainer -> keyVaultContainer "Retrieves secrets" "HTTPS/Private Endpoint" "Microsoft Azure - Private Endpoints"
+        skyAssistOrchestratorContainer -> orderAgentContainer "Calls Order Agent" "HTTPS"
+        skyAssistOrchestratorContainer -> productRecommendationContainer "Calls Travel Gear Finder" "HTTPS"
+        skyAssistOrchestratorContainer -> keyVaultContainer "Retrieves secrets" "HTTPS/Private Endpoint" "Microsoft Azure - Private Endpoints"
 
 
         // === AI Services Integration ===
         productRecommendationContainer -> agentHelpersContainer "Uses AI Foundry Agent Service" "HTTPS"
-        digitalAgentOrchestratorContainer -> agentHelpersContainer "Uses AI services" "HTTPS"
+        skyAssistOrchestratorContainer -> agentHelpersContainer "Uses AI services" "HTTPS"
 
         // === AI Foundry Internal Flow ===
         agentHelpersContainer -> sharedAIFoundryContainer "Uses shared services"
@@ -134,22 +134,22 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
         chatServiceContainer -> cosmosDbContainer "Stores conversation history" "HTTPS"
         productConversationMemoryComponent -> cosmosDbContainer "Stores conversation history" "HTTPS"
         orderAgentContainer -> cosmosDbContainer "Stores conversation history" "HTTPS"
-        digitalAgentOrchestratorContainer -> cosmosDbContainer "Stores conversation history" "HTTPS"
+        skyAssistOrchestratorContainer -> cosmosDbContainer "Stores conversation history" "HTTPS"
 
         // === External Systems Integration ===
         orderAgentContainer -> orderServiceSoftware "Retrieves order data" "HTTPS"
         productRecommendationContainer -> catalogServiceSoftware "Retrieves product data" "HTTPS"
-        digitalAgentOrchestratorContainer -> sunshineZendeskSoftware "Escalates tickets" "HTTPS"
+        skyAssistOrchestratorContainer -> sunshineZendeskSoftware "Escalates tickets" "HTTPS"
         sunshineZendeskSoftware -> zendeskSoftware "Integrates with" "HTTPS"
 
         // === Monitoring & Telemetry ===
         chatServiceContainer -> monitoringContainer "Sends telemetry" "HTTPS"
-        digitalAgentOrchestratorContainer -> monitoringContainer "Sends telemetry" "HTTPS"
+        skyAssistOrchestratorContainer -> monitoringContainer "Sends telemetry" "HTTPS"
         tracingComponent -> monitoringContainer "Sends telemetry" "HTTPS"
 
 
         // === Escalation Flow (Tagged for Dynamic Views) ===
-        digitalAgentOrchestratorContainer -> sunshineZendeskSoftware "Creates ticket/session" "HTTPS" {
+        skyAssistOrchestratorContainer -> sunshineZendeskSoftware "Creates ticket/session" "HTTPS" {
             tags "EscalationFlow"
         }
         zendeskSoftware -> reverseProxyContainer "Sends webhook reply" "HTTPS" {
@@ -168,7 +168,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
             deploymentNode "Customer's web browser" "" "Web Browser" {
                 softwareSystemInstance websiteSoftware devDeployment
-                containerInstance digitalAgentWidgetContainer devDeployment
+                containerInstance skyAssistWidgetContainer devDeployment
             }
             deploymentNode "SkyCart Employee's MS Teams" "" "Microsoft Teams" {
                 softwareSystemInstance microsoftTeamsSoftware devDeployment
@@ -205,7 +205,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                         }
                     }
                     deploymentNode "cae-skyassist-dev" "Container Apps Environment" "Azure Container Apps Environment" "Microsoft Azure - Container Apps Environments" {
-                        containerInstance digitalAgentOrchestratorContainer devDeployment "Microsoft Azure - Container Apps"
+                        containerInstance skyAssistOrchestratorContainer devDeployment "Microsoft Azure - Container Apps"
                         containerInstance orderAgentContainer devDeployment "Microsoft Azure - Container Apps"
                         containerInstance chatServiceContainer devDeployment "Microsoft Azure - Container Apps"
                         containerInstance productRecommendationContainer devDeployment "Microsoft Azure - Container Apps"
@@ -220,7 +220,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
             deploymentNode "Customer's web browser" "" "Web Browser" {
                 softwareSystemInstance websiteSoftware testDeployment
-                containerInstance digitalAgentWidgetContainer testDeployment
+                containerInstance skyAssistWidgetContainer testDeployment
             }
             deploymentNode "SkyCart Employee's MS Teams" "" "Microsoft Teams" {
                 softwareSystemInstance microsoftTeamsSoftware testDeployment
@@ -257,7 +257,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                         }
                     }
                     deploymentNode "cae-skyassist-test" "Container Apps Environment" "Azure Container Apps Environment" "Microsoft Azure - Container Apps Environments" {
-                        containerInstance digitalAgentOrchestratorContainer testDeployment "Microsoft Azure - Container Apps"
+                        containerInstance skyAssistOrchestratorContainer testDeployment "Microsoft Azure - Container Apps"
                         containerInstance orderAgentContainer testDeployment "Microsoft Azure - Container Apps"
                         containerInstance chatServiceContainer testDeployment "Microsoft Azure - Container Apps"
                         containerInstance productRecommendationContainer testDeployment "Microsoft Azure - Container Apps"
@@ -272,7 +272,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
             deploymentNode "Customer's web browser" "" "Web Browser" {
                 softwareSystemInstance websiteSoftware prodDeployment
-                containerInstance digitalAgentWidgetContainer prodDeployment
+                containerInstance skyAssistWidgetContainer prodDeployment
             }
             deploymentNode "SkyCart Employee's MS Teams" "" "Microsoft Teams" {
                 softwareSystemInstance microsoftTeamsSoftware prodDeployment
@@ -309,7 +309,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
                         }
                     }
                     deploymentNode "cae-skyassist-prod" "Container Apps Environment" "Azure Container Apps Environment" "Microsoft Azure - Container Apps Environments" {
-                        containerInstance digitalAgentOrchestratorContainer prodDeployment "Microsoft Azure - Container Apps"
+                        containerInstance skyAssistOrchestratorContainer prodDeployment "Microsoft Azure - Container Apps"
                         containerInstance orderAgentContainer prodDeployment "Microsoft Azure - Container Apps"
                         containerInstance chatServiceContainer prodDeployment "Microsoft Azure - Container Apps"
                         containerInstance productRecommendationContainer prodDeployment "Microsoft Azure - Container Apps"
@@ -361,7 +361,7 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
             description "The component diagram for the Chat Service."
         }
 
-        component digitalAgentOrchestratorContainer "Orchestrator" "Orchestrator Agent" {
+        component skyAssistOrchestratorContainer "Orchestrator" "Orchestrator Agent" {
             include *
             exclude existingSkyCartGroup 
             exclude "relationship.tag==EscalationFlow"
@@ -387,29 +387,29 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
 
         dynamic skyAssistSoftware "UniformDispatching" "Uniform Dispatching" {
-            digitalAgentWidgetContainer -> reverseProxyContainer "Sends messages to reverse proxy"
+            skyAssistWidgetContainer -> reverseProxyContainer "Sends messages to reverse proxy"
             reverseProxyContainer -> aiAgentServiceContainer "Routes to AI Agent Service"
             aiAgentServiceContainer -> chatServiceContainer "Forwards to chat service"
-            chatServiceContainer -> digitalAgentOrchestratorContainer "Passes the request to the orchestration agent"
-            digitalAgentOrchestratorContainer -> orderAgentContainer "Hands off order-related requests"
-            orderAgentContainer -> digitalAgentOrchestratorContainer "Returns the response of the order agent"
-            digitalAgentOrchestratorContainer -> productRecommendationContainer "Hands off product recommendation requests"
-            productRecommendationContainer -> digitalAgentOrchestratorContainer "Returns the response of the product recommendation agent"
-            digitalAgentOrchestratorContainer -> chatServiceContainer "Returns the response via the chain of execution"
+            chatServiceContainer -> skyAssistOrchestratorContainer "Passes the request to the orchestration agent"
+            skyAssistOrchestratorContainer -> orderAgentContainer "Hands off order-related requests"
+            orderAgentContainer -> skyAssistOrchestratorContainer "Returns the response of the order agent"
+            skyAssistOrchestratorContainer -> productRecommendationContainer "Hands off product recommendation requests"
+            productRecommendationContainer -> skyAssistOrchestratorContainer "Returns the response of the product recommendation agent"
+            skyAssistOrchestratorContainer -> chatServiceContainer "Returns the response via the chain of execution"
             chatServiceContainer -> aiAgentServiceContainer "Returns response to Azure Bot"
             aiAgentServiceContainer -> reverseProxyContainer "Returns response to reverse proxy"
-            reverseProxyContainer -> digitalAgentWidgetContainer "Returns the channel specific response to the Digital Agent Widget"
+            reverseProxyContainer -> skyAssistWidgetContainer "Returns the channel specific response to the SkyAssist Widget"
             autoLayout lr
             description "Uniform Dispatching"
         }
 
         dynamic skyAssistSoftware "EscalationProcess" "Escalation Process Messages delivery" {
-            customerPerson -> digitalAgentWidgetContainer "Sends the inqueries" "HTTPS"
-            digitalAgentWidgetContainer -> reverseProxyContainer "Sends messages to reverse proxy"
+            customerPerson -> skyAssistWidgetContainer "Sends the inqueries" "HTTPS"
+            skyAssistWidgetContainer -> reverseProxyContainer "Sends messages to reverse proxy"
             reverseProxyContainer -> aiAgentServiceContainer "Routes to AI Agent Service"
             aiAgentServiceContainer -> chatServiceContainer "Forwards to chat service"
-            chatServiceContainer -> digitalAgentOrchestratorContainer "Passes the request to the orchestration agent"
-            digitalAgentOrchestratorContainer -> sunshineZendeskSoftware "Escalates directly to Sunshine Zendesk"
+            chatServiceContainer -> skyAssistOrchestratorContainer "Passes the request to the orchestration agent"
+            skyAssistOrchestratorContainer -> sunshineZendeskSoftware "Escalates directly to Sunshine Zendesk"
             sunshineZendeskSoftware -> zendeskSoftware "Connects to Zendesk"
             zendeskSoftware -> csRepPerson "Message dispatched to the customer service representative"
             csRepPerson -> zendeskSoftware "Customer service representative replies to the customer"
@@ -417,8 +417,8 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
             reverseProxyContainer -> chatServiceContainer "Returns message via Webhook to chat service"
             chatServiceContainer -> aiAgentServiceContainer "Forwards response to Azure Bot"
             aiAgentServiceContainer -> reverseProxyContainer "Returns response to reverse proxy"
-            reverseProxyContainer -> digitalAgentWidgetContainer "Returns message to the widget"
-            digitalAgentWidgetContainer -> customerPerson "Returns message to the customer"
+            reverseProxyContainer -> skyAssistWidgetContainer "Returns message to the widget"
+            skyAssistWidgetContainer -> customerPerson "Returns message to the customer"
             
             autoLayout lr
             description "Escalation Process Messages delivery"
@@ -426,11 +426,11 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
 
         dynamic skyAssistSoftware "DataPersistenceFlow" "Conversation Data Persistence Flow" {
             chatServiceContainer -> cosmosDbContainer "Stores chat service conversation"
-            digitalAgentOrchestratorContainer -> cosmosDbContainer "Stores orchestrator conversation"
+            skyAssistOrchestratorContainer -> cosmosDbContainer "Stores orchestrator conversation"
             orderAgentContainer -> cosmosDbContainer "Stores order agent conversation"
             productRecommendationContainer -> cosmosDbContainer "Stores product recommendation conversation"
             cosmosDbContainer -> chatServiceContainer "Retrieves conversation history"
-            cosmosDbContainer -> digitalAgentOrchestratorContainer "Retrieves conversation history"
+            cosmosDbContainer -> skyAssistOrchestratorContainer "Retrieves conversation history"
             cosmosDbContainer -> orderAgentContainer "Retrieves conversation history"
             cosmosDbContainer -> productRecommendationContainer "Retrieves conversation history"
             
@@ -481,13 +481,13 @@ workspace "SkyCart" "SkyCart E-commerce Marketplace Digital Agent" {
         }
 
         container skyAssistSoftware "DataPersistenceView" "Data Persistence Architecture" {
-            include cosmosDbContainer staticContentContainer chatServiceContainer digitalAgentOrchestratorContainer orderAgentContainer productRecommendationContainer
+            include cosmosDbContainer staticContentContainer chatServiceContainer skyAssistOrchestratorContainer orderAgentContainer productRecommendationContainer
             autoLayout tb
             description "Data persistence architecture showing Cosmos DB, Storage, and services that persist data"
         }
 
         container skyAssistSoftware "MonitoringView" "Monitoring & Observability" {
-            include monitoringContainer chatServiceContainer digitalAgentOrchestratorContainer sharedAIFoundryContainer agentHelpersContainer
+            include monitoringContainer chatServiceContainer skyAssistOrchestratorContainer sharedAIFoundryContainer agentHelpersContainer
             autoLayout tb
             description "Monitoring and observability architecture showing telemetry flow"
         }
