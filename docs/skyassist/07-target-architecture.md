@@ -14,7 +14,7 @@ This section describes the target architecture for SkyAssist - a cloud-native, A
 
 SkyAssist is an intelligent conversational AI platform that serves as the primary interface for customer inquiries across multiple channels. It leverages advanced AI capabilities to understand natural language, provide personalized product recommendations, track orders, and seamlessly escalate to human agents when needed.
 
-![System Landscape](/images/skyassist/SystemLandscape.svg)
+![System Landscape](/aac-model2docs-techtalk/images/skyassist/SystemLandscape.svg)
 {: .svg-container}
 
 ### Key Actors
@@ -30,7 +30,7 @@ SkyAssist is an intelligent conversational AI platform that serves as the primar
 
 The following diagram shows how SkyAssist fits within the broader SkyCart ecosystem:
 
-![System Context](/images/skyassist/SystemContext.svg)
+![System Context](/aac-model2docs-techtalk/images/skyassist/SystemContext.svg)
 {: .svg-container}
 
 **External Systems Integration:**
@@ -56,7 +56,7 @@ The following diagram shows how SkyAssist fits within the broader SkyCart ecosys
 
 SkyAssist employs a microservices architecture with specialized AI agents, orchestrated through a central agent coordinator.
 
-![Container Diagram](/images/skyassist/Containers.svg)
+![Container Diagram](/aac-model2docs-techtalk/images/skyassist/Containers.svg)
 {: .svg-container}
 
 ### Architecturally Significant Containers
@@ -97,7 +97,7 @@ SkyAssist employs a microservices architecture with specialized AI agents, orche
   - Aggregate responses
 - **Decision Logic**: Uses LLM-based intent understanding
 
-![Orchestrator Agent](/images/skyassist/Orchestrator.svg)
+![Orchestrator Agent](/aac-model2docs-techtalk/images/skyassist/Orchestrator.svg)
 {: .svg-container}
 
 **5. Travel Gear Finder Agent (Product Recommendation)**
@@ -110,12 +110,12 @@ SkyAssist employs a microservices architecture with specialized AI agents, orche
   - Inventory validation
   - Result ranking and presentation
 
-![Product Recommendation Agent](/images/skyassist/ProductRecommendationAgent.svg)
+![Product Recommendation Agent](/aac-model2docs-techtalk/images/skyassist/ProductRecommendationAgent.svg)
 {: .svg-container}
 
 **Internal Workflow**:
 
-![Product Recommendation Workflow](/images/skyassist/ProductRecommendationWorkflow.svg)
+![Product Recommendation Workflow](/aac-model2docs-techtalk/images/skyassist/ProductRecommendationWorkflow.svg)
 {: .svg-container}
 
 The Travel Gear Finder Agent uses a sophisticated multi-stage process:
@@ -136,7 +136,7 @@ The Travel Gear Finder Agent uses a sophisticated multi-stage process:
   - Returns and refunds information
 - **Integration**: Calls Order Service APIs
 
-![Order Agent](/images/skyassist/OrderAgent.svg)
+![Order Agent](/aac-model2docs-techtalk/images/skyassist/OrderAgent.svg)
 {: .svg-container}
 
 #### AI Services
@@ -151,7 +151,7 @@ The Travel Gear Finder Agent uses a sophisticated multi-stage process:
   - Prompt management
 - **Projects**: Environment-specific projects (DEV, TEST, PROD)
 
-![Shared AI Foundry](/images/skyassist/SharedAIFoundry.svg)
+![Shared AI Foundry](/aac-model2docs-techtalk/images/skyassist/SharedAIFoundry.svg)
 {: .svg-container}
 
 **8. Agent Helpers (AI Foundry Agent Service)**
@@ -187,7 +187,7 @@ The Travel Gear Finder Agent uses a sophisticated multi-stage process:
   - User context
 - **Features**: Multi-region replication, automatic scaling
 
-![Data Persistence](/images/skyassist/DataPersistenceView.svg)
+![Data Persistence](/aac-model2docs-techtalk/images/skyassist/DataPersistenceView.svg)
 {: .svg-container}
 
 **12. Static Content (Storage Account)**
@@ -206,7 +206,7 @@ The Travel Gear Finder Agent uses a sophisticated multi-stage process:
   - Custom dashboards
   - Alerting
 
-![Monitoring View](/images/skyassist/MonitoringView.svg)
+![Monitoring View](/aac-model2docs-techtalk/images/skyassist/MonitoringView.svg)
 {: .svg-container}
 
 #### Channel Interfaces
@@ -312,7 +312,7 @@ SkyAssist integrates with multiple external and internal systems through well-de
   3. **Customer Delivery**: SkyAssist delivers response to customer
 - **Context Transfer**: Full conversation history included in escalation
 
-![Escalation Process](/images/skyassist/EscalationProcess.svg)
+![Escalation Process](/aac-model2docs-techtalk/images/skyassist/EscalationProcess.svg)
 {: .svg-container}
 
 #### Microsoft Teams Integration
@@ -392,7 +392,7 @@ SkyAssist integrates with multiple external and internal systems through well-de
 
 **Conversation Persistence Flow:**
 
-![Data Persistence Flow](/images/skyassist/DataPersistenceFlow.svg)
+![Data Persistence Flow](/aac-model2docs-techtalk/images/skyassist/DataPersistenceFlow.svg)
 {: .svg-container}
 
 **Flow Description:**
@@ -426,7 +426,7 @@ SkyAssist is deployed across three environments with identical architecture:
 
 #### Development Environment
 
-![Development Deployment](/images/skyassist/Deployment-001.svg)
+![Development Deployment](/aac-model2docs-techtalk/images/skyassist/Deployment-001.svg)
 {: .svg-container}
 
 **Purpose**: Development and testing  
@@ -435,7 +435,7 @@ SkyAssist is deployed across three environments with identical architecture:
 
 #### Test Environment
 
-![Test Deployment](/images/skyassist/Deployment-002.svg)
+![Test Deployment](/aac-model2docs-techtalk/images/skyassist/Deployment-002.svg)
 {: .svg-container}
 
 **Purpose**: QA, integration testing, UAT  
@@ -444,7 +444,7 @@ SkyAssist is deployed across three environments with identical architecture:
 
 #### Production Environment
 
-![Production Deployment](/images/skyassist/Deployment-003.svg)
+![Production Deployment](/aac-model2docs-techtalk/images/skyassist/Deployment-003.svg)
 {: .svg-container}
 
 **Purpose**: Live customer-facing system  
@@ -564,7 +564,7 @@ SkyAssist is deployed across three environments with identical architecture:
 
 This diagram shows the standard request/response flow for customer inquiries:
 
-![Uniform Dispatching](/images/skyassist/UniformDispatching.svg)
+![Uniform Dispatching](/aac-model2docs-techtalk/images/skyassist/UniformDispatching.svg)
 {: .svg-container}
 
 **Flow Description:**
@@ -580,7 +580,7 @@ This diagram shows the standard request/response flow for customer inquiries:
 
 ### Escalation Process
 
-![Escalation Process](/images/skyassist/EscalationProcess.svg)
+![Escalation Process](/aac-model2docs-techtalk/images/skyassist/EscalationProcess.svg)
 {: .svg-container}
 
 **Escalation Scenario:**

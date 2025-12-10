@@ -113,7 +113,7 @@ SkyAssist is deployed within SkyCart's Azure landing zone:
 
 SkyAssist integrates with the following existing systems:
 
-![System Context](/images/skyassist/SystemContext.svg)
+![System Context](/aac-model2docs-techtalk/images/skyassist/SystemContext.svg)
 {: .svg-container}
 
 **Existing SkyCart Systems:**
