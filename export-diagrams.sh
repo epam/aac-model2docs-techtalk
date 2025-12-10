@@ -1,80 +1,143 @@
 #!/bin/bash
-set -euo pipefail
-
-# Export Structurizr DSL and PlantUML files to PlantUML, PNG, and SVG formats
-# Usage: ./export-diagrams.sh [file1 file2 ... output_dir] | [output_dir] | [file]
-
-readonly DEFAULT_DSL_FILES=("models/skyassist/skyassist-model.dsl")
-readonly DEFAULT_PUML_FILES=()
-readonly JAVA_OPTS="-Djava.awt.headless=true"
+# Export Structurizr DSL diagrams and PlantUML files to PlantUML and SVG formats
 
 export_dsl_file() {
-    local dsl_file="$1" output_dir="$2"
-    [[ ! -f "$dsl_file" ]] && echo "Warning: $dsl_file not found" && return 1
+    local DSL_FILE="$1"
+    local BASE_OUTPUT_DIR="$2"
     
-    local basename=$(basename "$dsl_file" .dsl)
-    local subfolder="$output_dir/$basename"
-    echo "Processing DSL: $dsl_file"
+    [ ! -f "$DSL_FILE" ] && echo "Warning: $DSL_FILE not found" && return 1
     
-    mkdir -p "$subfolder"/{plantuml,png,svg}
-    structurizr-cli export -w "$dsl_file" -f plantuml -o "$subfolder/plantuml" >/dev/null || return 1
-    find "$subfolder/plantuml" -name "*-key.puml" -delete 2>/dev/null || true
+    DSL_BASENAME=$(basename "$DSL_FILE" .dsl)
+    local SUBFOLDER_DIR="$BASE_OUTPUT_DIR/$DSL_BASENAME"
     
-    local count=$(find "$subfolder/plantuml" -name "*.puml" 2>/dev/null | wc -l)
-    [[ "$count" -eq 0 ]] && echo "Warning: No PlantUML files generated" && return 1
+    echo "Processing DSL: $DSL_FILE"
     
-    plantuml -tpng -o "../png" "$subfolder/plantuml"/*.puml >/dev/null 2>&1 &
-    plantuml -tsvg -o "../svg" "$subfolder/plantuml"/*.puml >/dev/null 2>&1 &
-    wait
+    mkdir -p "$SUBFOLDER_DIR/plantuml" "$SUBFOLDER_DIR/svg"
+
+    # Export to PlantUML
+    JAVA_TOOL_OPTIONS="-Djava.awt.headless=true" structurizr-cli export -w "$DSL_FILE" -f plantuml -o "$SUBFOLDER_DIR/plantuml" > /dev/null || return 1
+
+    PUML_COUNT=$(find "$SUBFOLDER_DIR/plantuml" -name "*.puml" 2>/dev/null | wc -l)
+    [ "$PUML_COUNT" -eq 0 ] && echo "Warning: No PlantUML files generated" && return 1
+
+    # Generate SVG
+    java -Djava.awt.headless=true -jar "${PLANTUML_JAR:-/usr/local/plantuml/plantuml.jar}" -tsvg -o "../svg" "$SUBFOLDER_DIR/plantuml"/*.puml > /dev/null 2>&1 &
+    SVG_PID=$!
     
-    echo "✓ $basename: $count diagram(s) exported"
+    wait $SVG_PID || true
+
+    echo "✓ $DSL_BASENAME: $PUML_COUNT diagrams exported"
+    return 0
 }
 
 export_puml_file() {
-    local puml_file="$1" output_dir="$2"
-    [[ ! -f "$puml_file" ]] && echo "Warning: $puml_file not found" && return 1
+    local PUML_FILE="$1"
+    local BASE_OUTPUT_DIR="$2"
     
-    local basename=$(basename "$puml_file" .puml)
-    local subfolder="$output_dir/$basename"
-    echo "Processing PUML: $puml_file"
+    [ ! -f "$PUML_FILE" ] && echo "Warning: $PUML_FILE not found" && return 1
     
-    mkdir -p "$subfolder"/{plantuml,png,svg}
-    cp "$puml_file" "$subfolder/plantuml/" || return 1
+    PUML_BASENAME=$(basename "$PUML_FILE" .puml)
+    local SUBFOLDER_DIR="$BASE_OUTPUT_DIR/$PUML_BASENAME"
     
-    plantuml -tpng -o "../png" "$subfolder/plantuml/$basename.puml" >/dev/null 2>&1 &
-    plantuml -tsvg -o "../svg" "$subfolder/plantuml/$basename.puml" >/dev/null 2>&1 &
-    wait
+    echo "Processing PUML: $PUML_FILE"
     
-    echo "✓ $basename: 1 diagram exported"
+    mkdir -p "$SUBFOLDER_DIR/plantuml" "$SUBFOLDER_DIR/svg"
+
+    # Copy source PUML file
+    cp "$PUML_FILE" "$SUBFOLDER_DIR/plantuml/" || return 1
+
+    # Generate SVG
+    java -Djava.awt.headless=true -jar "${PLANTUML_JAR:-/usr/local/plantuml/plantuml.jar}" -tsvg -o "../svg" "$SUBFOLDER_DIR/plantuml/$PUML_BASENAME.puml" > /dev/null 2>&1 &
+    SVG_PID=$!
+    
+    wait $SVG_PID || true
+
+    echo "✓ $PUML_BASENAME: 1 diagram exported"
+    return 0
 }
 
-# Parse arguments
-if [[ $# -ge 2 ]]; then
-    input_files=("${@:1:$#-1}")
-    output_dir="${@: -1}"
-elif [[ $# -eq 1 && -f "$1" ]]; then
-    input_files=("$1")
-    output_dir="./exports"
-elif [[ $# -eq 1 ]]; then
-    input_files=("${DEFAULT_DSL_FILES[@]}" "${DEFAULT_PUML_FILES[@]}")
-    output_dir="$1"
+# Main script
+if [ $# -ge 2 ]; then
+    INPUT_FILES=("${@:1:$#-1}")
+    OUTPUT_DIR="${@: -1}"
+elif [ $# -eq 1 ] && [ -f "$1" ]; then
+    INPUT_FILES=("$1")
+    OUTPUT_DIR="./exports"
+elif [ $# -eq 1 ]; then
+    INPUT_FILES=($(find models \( -path models/common -prune \) -o \( -name "*.dsl" -o -name "*.puml" \) -print | sort))
+    OUTPUT_DIR="$1"
 else
-    input_files=("${DEFAULT_DSL_FILES[@]}" "${DEFAULT_PUML_FILES[@]}")
-    output_dir="./exports"
+    INPUT_FILES=($(find models \( -path models/common -prune \) -o \( -name "*.dsl" -o -name "*.puml" \) -print | sort))
+    OUTPUT_DIR="./exports"
 fi
 
-echo "Exporting ${#input_files[@]} file(s) to $output_dir"
-rm -rf "$output_dir"
-mkdir -p "$output_dir"
+echo "Exporting ${#INPUT_FILES[@]} file(s) to $OUTPUT_DIR"
+rm -rf "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
 
-success=0 failed=0
-for file in "${input_files[@]}"; do
-    case "$file" in
-        *.dsl)  export_dsl_file "$file" "$output_dir" && ((success++)) || ((failed++)) ;;
-        *.puml) export_puml_file "$file" "$output_dir" && ((success++)) || ((failed++)) ;;
-        *)      echo "Warning: Unsupported file type: $file"; ((failed++)) ;;
-    esac
+# Build dynamic mapping
+declare -A model_folders=()
+for INPUT_FILE in "${INPUT_FILES[@]}"; do
+    if [[ "$INPUT_FILE" == *.dsl ]]; then
+        model_name=$(basename "$INPUT_FILE" .dsl)
+    elif [[ "$INPUT_FILE" == *.puml ]]; then
+        model_name=$(basename "$INPUT_FILE" .puml)
+    fi
+    folder_name=$(basename "$(dirname "$INPUT_FILE")")
+    model_folders[$model_name]=$folder_name
 done
 
-echo "Completed: $success succeeded, $failed failed"
+EXPORT_COUNT=0
+FAILED_COUNT=0
+
+for INPUT_FILE in "${INPUT_FILES[@]}"; do
+    if [[ "$INPUT_FILE" == *.dsl ]]; then
+        if export_dsl_file "$INPUT_FILE" "$OUTPUT_DIR"; then
+            ((EXPORT_COUNT++))
+        else
+            ((FAILED_COUNT++))
+        fi
+    elif [[ "$INPUT_FILE" == *.puml ]]; then
+        if export_puml_file "$INPUT_FILE" "$OUTPUT_DIR"; then
+            ((EXPORT_COUNT++))
+        else
+            ((FAILED_COUNT++))
+        fi
+    else
+        echo "Warning: Unsupported file type: $INPUT_FILE"
+        ((FAILED_COUNT++))
+    fi
+done
+
+echo "Completed: $EXPORT_COUNT succeeded, $FAILED_COUNT failed"
+
+# Post-process SVGs to docs/images/
+echo "Post-processing SVGs to docs/images/"
+rm -rf docs/images/*
+mkdir -p docs/images
+
+# Copy SVGs with folder structure and rename
+for model_dir in "$OUTPUT_DIR"/*/; do
+  model_name=$(basename "$model_dir")
+  folder_name="${model_folders[$model_name]}"
+  
+  if [ -z "$folder_name" ]; then
+    echo "Warning: No folder mapping for $model_name"
+    continue
+  fi
+  
+  mkdir -p "docs/images/$folder_name"
+  
+  # Copy and rename SVG files (remove structurizr- prefix)
+  for svg_file in "$model_dir/svg"/*.svg; do
+    if [ -f "$svg_file" ]; then
+      filename=$(basename "$svg_file")
+      new_filename="${filename#structurizr-}"
+      cp "$svg_file" "docs/images/$folder_name/$new_filename"
+      echo "Copied: $filename -> $folder_name/$new_filename"
+    fi
+  done
+done
+
+echo "Post-processing complete."
 exit 0

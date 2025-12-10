@@ -68,46 +68,6 @@ jobs:
           chmod +x export-diagrams.sh
           ./export-diagrams.sh
 
-      - name: Copy SVG diagrams to docs folder with structure
-        run: |
-          set -e
-          # Remove old SVG files from docs/images
-          rm -rf docs/images/*
-          mkdir -p docs/images
-          
-          # Map model names to folder names
-          declare -A model_folders=(
-            ["skyassist-model"]="skyassist"
-            ["aiworkspaceagent-model"]="workspace-agent"
-            ["mission-app-model"]="mission-app"
-            ["mission-lifecycle-flow"]="mission-app"
-          )
-          
-          # Copy SVGs with folder structure and rename
-          for model_dir in exports/*/; do
-            model_name=$(basename "$model_dir")
-            folder_name="${model_folders[$model_name]}"
-            
-            if [ -z "$folder_name" ]; then
-              echo "Warning: No folder mapping for $model_name"
-              continue
-            fi
-            
-            mkdir -p "docs/images/$folder_name"
-            
-            # Copy and rename SVG files (remove structurizr- prefix)
-            for svg_file in "$model_dir/svg"/*.svg; do
-              if [ -f "$svg_file" ]; then
-                filename=$(basename "$svg_file")
-                # Remove structurizr- prefix
-                new_filename="${filename#structurizr-}"
-                cp "$svg_file" "docs/images/$folder_name/$new_filename"
-                echo "Copied: $filename -> $folder_name/$new_filename"
-              fi
-            done
-          done
-          exit 0
-
       - name: Commit SVG diagrams to repository
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -115,11 +75,7 @@ jobs:
           git add docs/images/
           if git diff --staged --quiet; then
             echo "No changes to commit"
-            exit 0
           else
             git commit -m "Update exported SVG diagrams [skip ci]"
-            git push || {
-              echo "Push failed, but diagrams were exported successfully"
-              exit 0
-            }
+            git push
           fi
